@@ -58,7 +58,8 @@ public class TaskManager {
         }
         try {
             for (String line : Files.readAllLines(storagePath, StandardCharsets.UTF_8)) {
-                String[] parts = line.split("\\t", 3);
+                // Accept the literal separators written by older versions too.
+                String[] parts = line.replace("\\t", "\t").split("\t", 3);
                 if (parts.length != 3) {
                     continue;
                 }
@@ -74,7 +75,7 @@ public class TaskManager {
 
     private void save() {
         List<String> lines = tasks.stream()
-                .map(task -> task.getId() + "\\t" + task.isCompleted() + "\\t"
+                .map(task -> task.getId() + "\t" + task.isCompleted() + "\t"
                         + Base64.getEncoder().encodeToString(task.getTitle().getBytes(StandardCharsets.UTF_8)))
                 .toList();
         try {
