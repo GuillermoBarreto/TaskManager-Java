@@ -23,6 +23,16 @@ public class TaskManagerTest {
             assert legacy.addTask("Next task").getId() == 8;
             assert new TaskManager(storage).getTasks().size() == 2;
             System.out.println("Task persistence checks passed.");
+
+            // Delete coverage: removing a task persists the removal.
+            TaskManager deleter = new TaskManager(storage);
+            assert deleter.getTasks().size() == 2;
+            assert deleter.deleteTask(7);
+            assert !deleter.deleteTask(7);
+            TaskManager afterDelete = new TaskManager(storage);
+            assert afterDelete.getTasks().size() == 1;
+            assert afterDelete.getTasks().get(0).getTitle().equals("Next task");
+            System.out.println("Task delete checks passed.");
         } finally {
             Files.deleteIfExists(storage);
         }
