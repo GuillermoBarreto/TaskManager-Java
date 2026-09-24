@@ -6,42 +6,43 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
         TaskManager manager = new TaskManager(Path.of("tasks.txt"));
-        Scanner scanner = new Scanner(System.in);
 
         System.out.println("Simple Task Manager");
         System.out.println("Your tasks are saved in tasks.txt. Type 'help' for commands.");
 
-        while (true) {
-            System.out.print("> ");
-            if (!scanner.hasNextLine()) {
-                break;
-            }
-            String input = scanner.nextLine().trim();
-            if (input.isEmpty()) {
-                continue;
-            }
-
-            String[] commandAndArgument = input.split("\\s+", 2);
-            String command = commandAndArgument[0].toLowerCase();
-            String argument = commandAndArgument.length == 2 ? commandAndArgument[1].trim() : "";
-
-            try {
-                switch (command) {
-                    case "add" -> addTask(manager, argument);
-                    case "list" -> listTasks(manager.getTasks());
-                    case "complete" -> completeTask(manager, argument);
-                    case "delete" -> deleteTask(manager, argument);
-                    case "help" -> printHelp();
-                    case "quit", "exit" -> {
-                        System.out.println("Goodbye!");
-                        return;
-                    }
-                    default -> System.out.println("Unknown command. Type 'help' to see available commands.");
+        try (Scanner scanner = new Scanner(System.in)) {
+            while (true) {
+                System.out.print("> ");
+                if (!scanner.hasNextLine()) {
+                    break;
                 }
-            } catch (IllegalArgumentException exception) {
-                System.out.println("Error: " + exception.getMessage());
-            } catch (IllegalStateException exception) {
-                System.out.println("Could not save your changes: " + exception.getMessage());
+                String input = scanner.nextLine().trim();
+                if (input.isEmpty()) {
+                    continue;
+                }
+
+                String[] commandAndArgument = input.split("\\s+", 2);
+                String command = commandAndArgument[0].toLowerCase();
+                String argument = commandAndArgument.length == 2 ? commandAndArgument[1].trim() : "";
+
+                try {
+                    switch (command) {
+                        case "add" -> addTask(manager, argument);
+                        case "list" -> listTasks(manager.getTasks());
+                        case "complete" -> completeTask(manager, argument);
+                        case "delete" -> deleteTask(manager, argument);
+                        case "help" -> printHelp();
+                        case "quit", "exit" -> {
+                            System.out.println("Goodbye!");
+                            return;
+                        }
+                        default -> System.out.println("Unknown command. Type 'help' to see available commands.");
+                    }
+                } catch (IllegalArgumentException exception) {
+                    System.out.println("Error: " + exception.getMessage());
+                } catch (IllegalStateException exception) {
+                    System.out.println("Could not save your changes: " + exception.getMessage());
+                }
             }
         }
     }
