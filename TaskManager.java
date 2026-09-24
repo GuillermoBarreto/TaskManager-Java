@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Comparator;
@@ -78,8 +79,19 @@ public class TaskManager {
                 .map(task -> task.getId() + "\t" + task.isCompleted() + "\t"
                         + Base64.getEncoder().encodeToString(task.getTitle().getBytes(StandardCharsets.UTF_8)))
                 .toList();
+        // Write to a temp file first, then atomically replace the data file so a
+        // crash mid-write can never leave a half-written tasks file behind.
+        Path parent = storagePath.toAbsolutePath().getParent();
         try {
-            Files.write(storagePath, lines, StandardCharsets.UTF_8);
+            Path tempFile = Files.createTempFile(parent, ".tasks", ".tmp");
+            try {
+                Files.write(tempFile, lines, StandardCharsets.UTF_8);
+                Files.move(tempFile, storagePath, StandardCopyOption.REPLACE_EXISTING,
+                        StandardCopyOption.ATOMIC_MOVE);
+            } catch (IOException | RuntimeException exception) {
+                Files.deleteIfExists(tempFile);
+                throw exception;
+            }
         } catch (IOException exception) {
             throw new IllegalStateException("Could not save task data to " + storagePath, exception);
         }
