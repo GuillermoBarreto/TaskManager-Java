@@ -20,6 +20,7 @@ public class TaskManager {
         load();
     }
 
+    /** Adds a task with the given title, saves, and returns the created task. */
     public Task addTask(String title) {
         Task task = new Task(nextId++, title, false);
         tasks.add(task);
@@ -27,6 +28,10 @@ public class TaskManager {
         return task;
     }
 
+    /**
+     * Marks the task with the given id complete and saves.
+     * Returns false when the task does not exist or is already complete.
+     */
     public boolean completeTask(int id) {
         Optional<Task> task = findTask(id);
         if (task.isEmpty() || task.get().isCompleted()) {
@@ -37,6 +42,10 @@ public class TaskManager {
         return true;
     }
 
+    /**
+     * Removes the task with the given id and saves. Returns false when no
+     * task with that id exists.
+     */
     public boolean deleteTask(int id) {
         boolean removed = tasks.removeIf(task -> task.getId() == id);
         if (removed) {
@@ -45,6 +54,7 @@ public class TaskManager {
         return removed;
     }
 
+    /** Returns all tasks ordered by id. */
     public List<Task> getTasks() {
         return tasks.stream().sorted(Comparator.comparingInt(Task::getId)).toList();
     }
