@@ -59,18 +59,32 @@ public class TaskManager {
         }
         try {
             for (String line : Files.readAllLines(storagePath, StandardCharsets.UTF_8)) {
-                // Accept the literal separators written by older versions too.
-                String[] parts = line.replace("\\t", "\t").split("\t", 3);
-                if (parts.length != 3) {
-                    continue;
-                }
-                int id = Integer.parseInt(parts[0]);
-                String title = new String(Base64.getDecoder().decode(parts[2]), StandardCharsets.UTF_8);
-                tasks.add(new Task(id, title, Boolean.parseBoolean(parts[1])));
-                nextId = Math.max(nextId, id + 1);
+                parseLine(line).ifPresent(tasks::add);
             }
-        } catch (IOException | IllegalArgumentException exception) {
+        } catch (IOException exception) {
             throw new IllegalStateException("Could not read task data from " + storagePath, exception);
+        }
+        for (Task task : tasks) {
+            nextId = Math.max(nextId, task.getId() + 1);
+        }
+    }
+
+    /**
+     * Parses one line of the data file. Returns empty for corrupt lines so a
+     * single bad line can never prevent the rest of the tasks from loading.
+     */
+    private static Optional<Task> parseLine(String line) {
+        try {
+            // Accept the literal separators written by older versions too.
+            String[] parts = line.replace("\\t", "\t").split("\t", 3);
+            if (parts.length != 3) {
+                return Optional.empty();
+            }
+            int id = Integer.parseInt(parts[0]);
+            String title = new String(Base64.getDecoder().decode(parts[2]), StandardCharsets.UTF_8);
+            return Optional.of(new Task(id, title, Boolean.parseBoolean(parts[1])));
+        } catch (IllegalArgumentException exception) {
+            return Optional.empty();
         }
     }
 
