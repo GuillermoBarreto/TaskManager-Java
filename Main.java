@@ -5,7 +5,13 @@ import java.util.Scanner;
 /** Console entry point for the task manager. */
 public class Main {
     public static void main(String[] args) {
-        TaskManager manager = new TaskManager(Path.of("tasks.txt"));
+        TaskManager manager;
+        try {
+            manager = new TaskManager(Path.of("tasks.txt"));
+        } catch (IllegalStateException exception) {
+            System.out.println("Could not load your tasks: " + exception.getMessage());
+            return;
+        }
 
         System.out.println("Simple Task Manager");
         System.out.println("Your tasks are saved in tasks.txt. Type 'help' for commands.");
