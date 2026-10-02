@@ -91,6 +91,7 @@ public class Main {
                 + "  complete <id>    Mark a task complete\n"
                 + "  delete <id>      Remove a task\n"
                 + "  help             Show this message\n"
-                + "  quit             Exit the program");
+                + "  quit, exit       Exit the program");
     }
 }
+
