@@ -90,6 +90,9 @@ public class TaskManager {
             if (parts.length != 3) {
                 return Optional.empty();
             }
+            if (!parts[1].equals("true") && !parts[1].equals("false")) {
+                return Optional.empty();
+            }
             int id = Integer.parseInt(parts[0]);
             String title = new String(Base64.getDecoder().decode(parts[2]), StandardCharsets.UTF_8);
             return Optional.of(new Task(id, title, Boolean.parseBoolean(parts[1])));
@@ -121,3 +124,4 @@ public class TaskManager {
         }
     }
 }
+
