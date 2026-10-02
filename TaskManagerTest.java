@@ -33,8 +33,24 @@ public class TaskManagerTest {
             assert afterDelete.getTasks().size() == 1;
             assert afterDelete.getTasks().get(0).getTitle().equals("Next task");
             System.out.println("Task delete checks passed.");
+
+            // Corrupt-line coverage: lines with bad separators, an invalid
+            // completion flag, or a non-numeric id are skipped without losing
+            // the good lines.
+            String goodTitle = Base64.getEncoder().encodeToString("Good task".getBytes(StandardCharsets.UTF_8));
+            Files.writeString(storage, "12\tfalse\t" + goodTitle + "\n"
+                    + "this line has no separators\n"
+                    + "13\tyes\t" + goodTitle + "\n"
+                    + "notanid\tfalse\t" + goodTitle + "\n");
+            TaskManager corrupt = new TaskManager(storage);
+            assert corrupt.getTasks().size() == 1;
+            assert corrupt.getTasks().get(0).getId() == 12;
+            assert corrupt.getTasks().get(0).getTitle().equals("Good task");
+            assert corrupt.addTask("Task after corruption").getId() == 13;
+            System.out.println("Corrupt line skip checks passed.");
         } finally {
             Files.deleteIfExists(storage);
         }
     }
 }
+
