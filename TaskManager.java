@@ -22,7 +22,11 @@ public class TaskManager {
 
     /** Adds a task with the given title, saves, and returns the created task. */
     public Task addTask(String title) {
-        Task task = new Task(nextId++, title, false);
+        int id = nextId;
+        // Validate the title before spending the id: a blank title throws in
+        // the Task constructor, and must not leave a gap in the id sequence.
+        Task task = new Task(id, title, false);
+        nextId = id + 1;
         tasks.add(task);
         save();
         return task;
