@@ -48,6 +48,25 @@ public class TaskManagerTest {
             assert corrupt.getTasks().get(0).getTitle().equals("Good task");
             assert corrupt.addTask("Task after corruption").getId() == 13;
             System.out.println("Corrupt line skip checks passed.");
+
+            // Failed adds (blank title) must not consume a task id.
+            Path idGapStorage = Files.createTempFile("task-manager-idgap-", ".txt");
+            try {
+                TaskManager idGaps = new TaskManager(idGapStorage);
+                Task first = idGaps.addTask("First");
+                boolean rejected = false;
+                try {
+                    idGaps.addTask("   ");
+                } catch (IllegalArgumentException expected) {
+                    rejected = true;
+                }
+                assert rejected : "blank title should be rejected";
+                Task second = idGaps.addTask("Second");
+                assert second.getId() == first.getId() + 1 : "rejected add must not consume an id";
+                System.out.println("Blank-title id checks passed.");
+            } finally {
+                Files.deleteIfExists(idGapStorage);
+            }
         } finally {
             Files.deleteIfExists(storage);
         }
