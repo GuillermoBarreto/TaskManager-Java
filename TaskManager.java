@@ -1,5 +1,6 @@
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -117,8 +118,15 @@ public class TaskManager {
             Path tempFile = Files.createTempFile(parent, ".tasks", ".tmp");
             try {
                 Files.write(tempFile, lines, StandardCharsets.UTF_8);
-                Files.move(tempFile, storagePath, StandardCopyOption.REPLACE_EXISTING,
-                        StandardCopyOption.ATOMIC_MOVE);
+                try {
+                    Files.move(tempFile, storagePath, StandardCopyOption.REPLACE_EXISTING,
+                            StandardCopyOption.ATOMIC_MOVE);
+                } catch (AtomicMoveNotSupportedException atomicNotSupported) {
+                    // The temp file lives in the system temp dir while the data
+                    // file is elsewhere (e.g. a different filesystem): fall back
+                    // to a plain replace instead of failing the save.
+                    Files.move(tempFile, storagePath, StandardCopyOption.REPLACE_EXISTING);
+                }
             } catch (IOException | RuntimeException exception) {
                 Files.deleteIfExists(tempFile);
                 throw exception;
