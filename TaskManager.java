@@ -68,6 +68,11 @@ public class TaskManager {
         return tasks.stream().filter(task -> task.getId() == id).findFirst();
     }
 
+    /**
+     * Loads tasks from the storage file at startup. Skips corrupt lines so one
+     * bad line can never prevent the rest of the tasks from loading, then
+     * advances nextId past the highest id found.
+     */
     private void load() {
         if (!Files.exists(storagePath)) {
             return;
@@ -106,6 +111,11 @@ public class TaskManager {
         }
     }
 
+    /**
+     * Persists all tasks to the storage file, writing to a temp file first and
+     * atomically replacing the data file so a crash mid-write cannot leave a
+     * half-written tasks file behind.
+     */
     private void save() {
         List<String> lines = tasks.stream()
                 .map(task -> task.getId() + "\t" + task.isCompleted() + "\t"
