@@ -122,9 +122,9 @@ public class TaskManager {
                     Files.move(tempFile, storagePath, StandardCopyOption.REPLACE_EXISTING,
                             StandardCopyOption.ATOMIC_MOVE);
                 } catch (AtomicMoveNotSupportedException atomicNotSupported) {
-                    // The temp file lives in the system temp dir while the data
-                    // file is elsewhere (e.g. a different filesystem): fall back
-                    // to a plain replace instead of failing the save.
+                    // The temp file and the data file can live on different
+                    // filesystems (e.g. a network-mounted home directory): fall
+                    // back to a plain replace instead of failing the save.
                     Files.move(tempFile, storagePath, StandardCopyOption.REPLACE_EXISTING);
                 }
             } catch (IOException | RuntimeException exception) {
