@@ -7,8 +7,10 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /** Stores tasks and saves them to a small local data file. */
 public class TaskManager {
@@ -78,8 +80,16 @@ public class TaskManager {
             return;
         }
         try {
+            Set<Integer> seenIds = new HashSet<>();
             for (String line : Files.readAllLines(storagePath, StandardCharsets.UTF_8)) {
-                parseLine(line).ifPresent(tasks::add);
+                parseLine(line).ifPresent(task -> {
+                    // First occurrence of each id wins: duplicates would make
+                    // complete() (first match) and delete() (all matches)
+                    // behave inconsistently, so later copies are dropped.
+                    if (seenIds.add(task.getId())) {
+                        tasks.add(task);
+                    }
+                });
             }
         } catch (IOException exception) {
             throw new IllegalStateException("Could not read task data from " + storagePath, exception);
