@@ -67,9 +67,30 @@ public class TaskManagerTest {
             } finally {
                 Files.deleteIfExists(idGapStorage);
             }
+
+            // Duplicate-id coverage: the first occurrence of an id wins, and
+            // zero ids are treated as corrupt, so neither can corrupt the load.
+            Path dupStorage = Files.createTempFile("task-manager-dup-", ".txt");
+            try {
+                String keepTitle = Base64.getEncoder().encodeToString("Keep me".getBytes(StandardCharsets.UTF_8));
+                String dropTitle = Base64.getEncoder().encodeToString("Drop me".getBytes(StandardCharsets.UTF_8));
+                Files.writeString(dupStorage, "21\tfalse\t" + keepTitle + "\n"
+                        + "0\tfalse\t" + dropTitle + "\n"
+                        + "21\ttrue\t" + dropTitle + "\n");
+                TaskManager duplicates = new TaskManager(dupStorage);
+                assert duplicates.getTasks().size() == 1 : "duplicate and zero ids must not load extra tasks";
+                assert duplicates.getTasks().get(0).getId() == 21;
+                assert duplicates.getTasks().get(0).getTitle().equals("Keep me");
+                assert !duplicates.getTasks().get(0).isCompleted()
+                        : "first occurrence of an id wins";
+                System.out.println("Duplicate and zero id checks passed.");
+            } finally {
+                Files.deleteIfExists(dupStorage);
+            }
         } finally {
             Files.deleteIfExists(storage);
         }
     }
 }
+
 
