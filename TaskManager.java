@@ -114,9 +114,10 @@ public class TaskManager {
                 return Optional.empty();
             }
             int id = Integer.parseInt(parts[0]);
-            // Ids are only ever assigned as positive values, so a negative id
-            // means the line was hand-edited wrongly: treat it as corrupt.
-            if (id < 0) {
+            // Ids are only ever assigned as positive values (nextId starts at
+            // 1), so a zero or negative id means the line was hand-edited
+            // wrongly: treat it as corrupt.
+            if (id <= 0) {
                 return Optional.empty();
             }
             String title = new String(Base64.getDecoder().decode(parts[2]), StandardCharsets.UTF_8);
@@ -161,4 +162,5 @@ public class TaskManager {
         }
     }
 }
+
 
